@@ -1,0 +1,15 @@
+{
+  "name": "top-movie",
+  "version": "0.1.0",
+  "description": "A very awesome movie quiz game",
+  "main": "server.js",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "keywords": [
+    "movie",
+    "quiz"
+  ],
+  "author": "Justin Wyer <justin@lifeasageek.com>",
+  "license": "MIT"
+}
