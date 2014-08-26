@@ -11,8 +11,12 @@ module.exports = {
             })
             .then(function (body) {
                 var $ = cheerio.load(body);
-                return _.map($('div.lister table.chart tbody.lister-list tr td.titleColumn a'), function (element) {
-                    return {name: $(element).text(), url: $(element).attr('href')};
+                return _.map($('div.lister table.chart tbody.lister-list tr td.titleColumn'), function (element) {
+                    return {
+                        name: $(element).find('a').text(),
+                        url: $(element).find('a').attr('href'),
+                        year: new Date($(element).find('span.secondaryInfo').data().value).getFullYear()
+                    };
                 });
             });
     }

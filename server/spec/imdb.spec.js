@@ -27,7 +27,12 @@ describe('imdb', function () {
 
         it('should expect The Shawshank Redemption to be in the list', function () {
             var movies = imdb.movies();
-            return expect(movies).to.eventually.contain({name: 'The Shawshank Redemption', url: '/title/tt0111161/?ref_=chttp_tt_1'});
+            return expect(movies).to.eventually.contain(
+                {
+                    name: 'The Shawshank Redemption',
+                    url: '/title/tt0111161/?ref_=chttp_tt_1',
+                    year: 1994
+                });
         });
     });
 });
