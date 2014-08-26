@@ -14,7 +14,7 @@ function Game(server) {
             var message = JSON.parse(rawMessage);
             console.log(message);
             if (message.event === 'register') {
-                console.log('psuhing');
+                console.log('pushing');
                 lobby.push({name: message.data, socket: socket});
                 console.log('telling them to wait');
                 socket.send(JSON.stringify({event: 'waiting'}));
