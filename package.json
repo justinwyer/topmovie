@@ -4,7 +4,8 @@
   "description": "A very awesome movie quiz game",
   "main": "server.js",
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test",
+    "postinstall": "./node_modules/.bin/grunt"
   },
   "keywords": [
     "movie",
@@ -15,7 +16,6 @@
   "engines": {
     "node": "0.10.x"
   },
-  "postinstall": "./node_modules/.bin/grunt",
   "devDependencies": {
     "bower": "^1.3.9",
     "chai": "^1.9.1",
