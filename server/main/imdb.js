@@ -14,8 +14,8 @@ module.exports = {
                 return _.map($('div.lister table.chart tbody.lister-list tr td.titleColumn'), function (element) {
                     return {
                         name: $(element).find('a').text(),
-                        url: $(element).find('a').attr('href'),
-                        year: new Date($(element).find('span.secondaryInfo').data().value).getFullYear()
+                        id: $(element).find('a').attr('href').split('/')[2],
+                        year: parseInt($(element).find('span.secondaryInfo').text().slice(1, -1))
                     };
                 });
             });

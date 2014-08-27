@@ -30,7 +30,7 @@ describe('imdb', function () {
             return expect(movies).to.eventually.contain(
                 {
                     name: 'The Shawshank Redemption',
-                    url: '/title/tt0111161/?ref_=chttp_tt_1',
+                    id: 'tt0111161',
                     year: 1994
                 });
         });

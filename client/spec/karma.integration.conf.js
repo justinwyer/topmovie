@@ -4,9 +4,10 @@ module.exports = function(config) {
         browsers: ['Chrome'],
 
         files: [
+            '../../bower_components/angular/angular.js',
             '../../bower_components/eventEmitter/EventEmitter.js',
             '*.spec.js',
-                '../main/*.js'
+            '../main/*.js'
         ],
 
         port: 9018,

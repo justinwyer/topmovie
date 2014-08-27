@@ -3,7 +3,7 @@ module.exports = function (grunt) {
         express: {
             dev: {
                 options: {
-                    script: 'server.js'
+                    script: 'dev.js'
                 }
             }
         },
@@ -17,27 +17,22 @@ module.exports = function (grunt) {
             },
             karma: {
                 files: ['client/**/*.js'],
-                tasks: ['karma:integration:run']
+                tasks: ['express:dev', 'karma:integration:run']
             },
-            mochaTest: {
-                files: 'server/**/*.js',
-                tasks: ['mochaTest']
-            }
-        },
-        mochaTest: {
-            test: {
-                options: {
-                    reporter: 'spec'
-                },
-                src: ['server/spec/*.js']
+            options: {
+                spawn: false
             }
         },
         karma: {
-            integration: {
-                configFile: 'client/spec/karma.conf.js',
+            develop: {
+                configFile: 'client/spec/karma.integration.conf.js',
                 background: true,
                 runnerPort: 9877,
                 browsers: ['Chrome']
+            },
+            integration: {
+                configFile: 'client/spec/karma.integration.conf.js',
+                singleRun: true
             }
         }
     });
@@ -47,6 +42,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-karma');
 
-    grunt.registerTask('test:full', ['express:dev', 'mochaTest', 'karma:integration', 'watch'])
-    grunt.registerTask('test:unit', ['mochaTest', 'watch:mochaTest'])
+    grunt.registerTask('develop', ['express:dev', 'karma:develop:start', 'watch']);
+    grunt.registerTask('test', ['express:dev', 'karma:integration:start']);
 };
