@@ -12,6 +12,7 @@
             $scope.client.on('game', function (message) {
                 $scope.gameState = 'game';
                 $scope.movie = message.movie;
+                $scope.movie.imageUrl = '/images/' + $scope.movie.imageUrl.split('/images/')[1];
                 $scope.$apply();
             });
             $scope.client.on('game over', function (message) {
