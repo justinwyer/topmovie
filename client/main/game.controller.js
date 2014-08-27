@@ -13,7 +13,8 @@
                 $scope.movie = message.movie;
                 $http.get('/movie/' + message.movie.id)
                     .success(function(data) {
-                        $scope.movie.imageUrl = data.imageUrl;
+                        var image = data.imageUrl.split('/images/')[1];
+                        $scope.movie.imageUrl = '/images/' + image;
                         $scope.$apply();
                     });
             });
