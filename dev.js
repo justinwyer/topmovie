@@ -13,3 +13,4 @@ FS.read('server/spec/top.html')
 var Constants = require('./server/main/quiz').Constants;
 Constants.NUMBER_OF_ROUNDS = 8;
 Constants.ROUND_LENGTH = 200;
+process.env.PORT = 3000;

@@ -1,7 +1,7 @@
 var http = require('http');
 var express = require('express');
 var app = express();
-app.set('port', 3000);
+app.set('port', process.env.PORT);
 app.use(express.static(__dirname + '/client/main'));
 var api = require('./server/main/api')(app);
 var server = http.createServer(app);
