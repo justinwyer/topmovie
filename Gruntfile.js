@@ -37,7 +37,7 @@ module.exports = function (grunt) {
         },
         bower: {
             dev: {
-                dest: 'client/main/vendor'
+                dest: './client/main/vendor'
             }
         }
     });
