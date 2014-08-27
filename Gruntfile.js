@@ -5,12 +5,17 @@ module.exports = function (grunt) {
                 options: {
                     script: 'dev.js'
                 }
+            },
+            test: {
+                options: {
+                    script: 'test.js'
+                }
             }
         },
         watch: {
             express: {
                 files: ['server/main/*.js'],
-                tasks: ['express:dev', 'karma:integration:run'],
+                tasks: ['express:dev'],
                 options: {
                     spawn: false
                 }
@@ -48,7 +53,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('grunt-bower');
 
-    grunt.registerTask('develop', ['bower:dev', 'express:dev', 'karma:develop:start', 'watch']);
-    grunt.registerTask('test', ['express:dev', 'karma:integration:start']);
+    grunt.registerTask('develop', ['bower:dev', 'express:dev', 'watch:express']);
+    grunt.registerTask('test', ['express:test', 'karma:integration:start']);
     grunt.registerTask('default', ['bower:dev']);
 };

@@ -5,7 +5,7 @@ var imdb = require('./imdb');
 
 var Constants = {
     NUMBER_OF_ROUNDS: 8,
-    ROUND_LENGTH: 10000
+    ROUND_LENGTH: 8000
 };
 
 function Client(quiz, socket) {
@@ -52,17 +52,18 @@ function Game(quiz, playerOne, playerTwo) {
     this.name = playerOne.name + ' vs ' + playerTwo.name;
     this.round = {number: 0};
     this.scores = {};
-    this.scores[playerOne.name] = 0;
-    this.scores[playerTwo.name] = 0;
+    this.scores[playerOne.name] = {};
+    this.scores[playerTwo.name] = {};
     this.playerOne.joinGame(this);
     this.playerTwo.joinGame(this);
     this.newRound();
+    this.playedMovies = [];
     this.on('answer', function (player, data) {
         if (data.name === this.round.movie.name) {
-            if (data.year ===  this.round.movie.year) {
-                this.scores[player.name] += 5;
+            if (data.year === this.round.movie.year) {
+                this.scores[player.name][data.name] = 5;
             } else {
-                this.scores[player.name] -= 3;
+                this.scores[player.name][data.name] = -3;
             }
         }
     });
@@ -92,16 +93,33 @@ Game.prototype.playerDisconnected = function () {
     }
 };
 
+Game.prototype.sumScores = function () {
+    var scores = {};
+    var sumScore = function (player) {
+        return _.reduce(this.scores[player.name], function (sum, score, key) {
+            return sum + score;
+        }, 0);
+    }.bind(this);
+    scores[this.playerOne.name] = sumScore(this.playerOne);
+    scores[this.playerTwo.name] = sumScore(this.playerTwo);
+    return scores
+};
+
 Game.prototype.newRound = function () {
-    this.round = {number: this.round.number + 1};
+    this.round.number++;
     if (this.round.number > Constants.NUMBER_OF_ROUNDS) {
-        this.send({event: 'game over', data: {scores: this.scores}} );
+        clearTimeout(this.nextRound);
+        this.send({event: 'game over', data: {scores: this.sumScores()}} );
         this.end();
         return;
     }
     imdb.movies()
         .then(function (movies) {
-            var movie = _.sample(movies);
+            var movie;
+            do {
+                movie = _.sample(movies);
+            } while (_.contains(this.playedMovies, movie.name));
+            this.playedMovies.push(movie.name);
             this.round.movie = movie;
             var years = _.range(movie.year - 3, movie.year + 3);
             _.remove(years, function (year) {
@@ -109,7 +127,7 @@ Game.prototype.newRound = function () {
             });
             years = _.sample(years, 2);
             years.push(movie.year);
-            this.send({event: 'game', data: {scores: this.scores,
+            this.send({event: 'game', data: {scores: this.sumScores(),
                        movie: {name: movie.name, years: _.shuffle(years), id: movie.id}}});
             this.nextRound = setTimeout(this.newRound.bind(this), Constants.ROUND_LENGTH);
         }.bind(this))

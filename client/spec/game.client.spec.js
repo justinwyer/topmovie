@@ -95,12 +95,12 @@ describe('game socket', function () {
                     playerOne.answer('American History X', 1998);
                 } else if (message.movie.name === 'Raiders of the Lost Ark') {
                     playerOne.answer('Raiders of the Lost Ark', 1981);
+                    playerOne.answer('Raiders of the Lost Ark', 1981);
                 }
             });
             playerTwo.on('game over', function (message) {
                 expect(count).to.equal(8);
-                expect(message.scores['player one']).to.equal(10);
-                expect(message.scores['player two']).to.equal(2);
+                expect(message).to.deep.equal({scores: {'player one': 10, 'player two': 2}});
                 playerTwo.on('close', function () {
                     done();
                 });
