@@ -37,7 +37,7 @@ Client.prototype.send = function (message) {
 };
 
 Client.prototype.close = function () {
-    this.websocket.close();
+    this.socket.close();
 };
 
 Client.prototype.joinGame = function (game) {
@@ -96,6 +96,7 @@ Game.prototype.newRound = function () {
     this.round = {number: this.round.number + 1};
     if (this.round.number > Constants.NUMBER_OF_ROUNDS) {
         this.send({event: 'game over', data: {scores: this.scores}} );
+        this.end();
         return;
     }
     imdb.movies()
@@ -103,7 +104,9 @@ Game.prototype.newRound = function () {
             var movie = _.sample(movies);
             this.round.movie = movie;
             var years = _.range(movie.year - 3, movie.year + 3);
-            _.remove(years, movie.year);
+            _.remove(years, function (year) {
+                return year === movie.year
+            });
             years = _.sample(years, 2);
             years.push(movie.year);
             this.send({event: 'game', data: {scores: this.scores,
@@ -116,7 +119,7 @@ Game.prototype.newRound = function () {
 
 function Quiz(server) {
     var quiz = this;
-    this.socketServer = new WebSocketServer({server: server});
+    this.socketServer = new WebSocketServer({server: server, path: '/quiz'});
     this.clients = [];
     this.games = [];
     this.socketServer.on('connection', function (socket) {
@@ -129,7 +132,6 @@ Quiz.prototype.constructor = Quiz;
 
 Quiz.prototype.register = function (client) {
     this.clients.push(client);
-    client.send({event: 'registered'});
     client.send({event: 'waiting'});
     if (this.clients.length >= 2) {
         this.games.push(new Game(this, this.clients.shift(), this.clients.shift()))

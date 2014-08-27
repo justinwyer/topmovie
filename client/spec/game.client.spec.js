@@ -1,9 +1,10 @@
 describe('game socket', function () {
+    chai.config.truncateThreshold = 0;
     var playerOne, playerTwo;
 
     describe('lobby', function () {
         beforeEach(function () {
-            playerOne = new GameClient('ws://localhost:3000', 'solo player');
+            playerOne = new GameClient('ws://localhost:3000/quiz', 'solo player');
         });
 
         afterEach(function (done) {
@@ -13,9 +14,8 @@ describe('game socket', function () {
             playerOne.close();
         });
 
-        it('should let a player know they are waitin for an opponent when they join', function (done) {
+        it('should let a player know they are waiting for an opponent when they join', function (done) {
             playerOne.on('waiting', function () {
-                expect(playerOne.isRegistered()).to.be.true;
                 done();
             });
         });
@@ -23,11 +23,14 @@ describe('game socket', function () {
 
     describe('game', function () {
         beforeEach(function () {
-            playerOne = new GameClient('ws://localhost:3000', 'player one');
-            playerTwo = new GameClient('ws://localhost:3000', 'player two');
+            playerOne = new GameClient('ws://localhost:3000/quiz', 'player one');
+            playerTwo = new GameClient('ws://localhost:3000/quiz', 'player two');
         });
 
         afterEach(function (done) {
+            if (!playerOne.connected && !playerTwo.connected) {
+                done();
+            }
             playerOne.on('close', function () {
                 playerTwo.on('close', function () {
                     done();
@@ -48,10 +51,14 @@ describe('game socket', function () {
         });
 
         it('should present the first movie', function (done) {
+            var expected = {scores: {'player one': 0, 'player two': 0},
+                movie: { name: 'Touch of Evil',
+                    years: [ 1958, 1955, 1956 ],
+                    id: 'tt0052311' }};
             playerOne.on('game', function (message) {
-                expect(message).to.deep.equal({scores: {'player one':0, 'player two':0}, movie: {name: 'The Silence of the Lambs', years: [1989, 1991, 1988], id: 'tt0102926'}});
+                expect(message).to.deep.equal(expected);
                 playerTwo.on('game', function (message) {
-                    expect(message).to.deep.equal({scores: {'player one':0, 'player two':0}, movie: {name: 'The Silence of the Lambs', years: [1989, 1991, 1988], id: 'tt0102926'}});
+                    expect(message).to.deep.equal(expected);
                     done();
                 });
             });
@@ -63,7 +70,10 @@ describe('game socket', function () {
             playerTwo.on('game', function (message) {
                 count += 1;
                 if (count == 2) {
-                    expect(message).to.deep.equal({scores: {'player one':0, 'player two':0}, movie: {name: 'Strangers on a Train', years: [1948, 1951, 1951], id: 'tt0044079'}});
+                    expect(message).to.deep.equal({scores: {'player one':0, 'player two':0},
+                        movie: { name: 'In the Name of the Father',
+                            years: [ 1990, 1991, 1993 ],
+                            id: 'tt0107207' }});
                     done();
                 }
             });
@@ -74,24 +84,26 @@ describe('game socket', function () {
             var count = 0;
             playerTwo.on('game', function (message) {
                 count += 1;
-                if (message.movie.name === 'Dog Day Afternoon') {
-                    playerTwo.answer('Dog Day Afternoon', 1975)
-                } else if (message.movie.name === 'The Shining') {
-                    playerTwo.answer('The Shining', 1985)
+                if (message.movie.name === 'Spirited Away') {
+                    playerTwo.answer('Spirited Away', 2001);
+                } else if (message.movie.name === 'Aliens') {
+                    playerTwo.answer('Aliens', 1985);
                 }
             });
             playerOne.on('game', function (message) {
-                if (message.movie.name === 'Trainspotting') {
-                    playerOne.answer('Trainspotting', 1996)
-                } else if (message.movie.name === 'Platoon') {
-                    playerOne.answer('Platoon', 1986)
+                if (message.movie.name === 'American History X') {
+                    playerOne.answer('American History X', 1998);
+                } else if (message.movie.name === 'Raiders of the Lost Ark') {
+                    playerOne.answer('Raiders of the Lost Ark', 1981);
                 }
             });
             playerTwo.on('game over', function (message) {
                 expect(count).to.equal(8);
                 expect(message.scores['player one']).to.equal(10);
                 expect(message.scores['player two']).to.equal(2);
-                done();
+                playerTwo.on('close', function () {
+                    done();
+                });
             });
         });
     });

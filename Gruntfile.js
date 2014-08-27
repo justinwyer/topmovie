@@ -34,6 +34,11 @@ module.exports = function (grunt) {
                 configFile: 'client/spec/karma.integration.conf.js',
                 singleRun: true
             }
+        },
+        bower: {
+            dev: {
+                dest: 'client/main/vendor'
+            }
         }
     });
 
@@ -41,7 +46,9 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-express-server');
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-karma');
+    grunt.loadNpmTasks('grunt-bower');
 
-    grunt.registerTask('develop', ['express:dev', 'karma:develop:start', 'watch']);
+    grunt.registerTask('develop', ['bower:dev', 'express:dev', 'karma:develop:start', 'watch']);
     grunt.registerTask('test', ['express:dev', 'karma:integration:start']);
+    grunt.registerTask('default', ['bower:dev']);
 };

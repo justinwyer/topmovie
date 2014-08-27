@@ -1,7 +1,8 @@
 function GameClient(url, name) {
-    this.registered = false;
+    this.connected = false;
     this.websocket = new WebSocket(url);
     this.websocket.onopen = function () {
+        this.connected = true;
         this.emit('open');
     }.bind(this);
     this.websocket.onmessage = function (rawMessage) {
@@ -9,13 +10,11 @@ function GameClient(url, name) {
         this.emit(message.event, message.data);
     }.bind(this);
     this.websocket.onclose = function () {
+        this.connected = false;
         this.emit('close');
     }.bind(this);
     this.on('open', function () {
         this.send({event: 'register', data: name});
-    });
-    this.on('registered', function () {
-        this.registered = true;
     });
 }
 
@@ -28,10 +27,6 @@ GameClient.prototype.send = function (message) {
 
 GameClient.prototype.close = function () {
     this.websocket.close();
-};
-
-GameClient.prototype.isRegistered = function () {
-    return this.registered;
 };
 
 GameClient.prototype.answer = function (name, year) {
