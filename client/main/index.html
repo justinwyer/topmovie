@@ -24,12 +24,21 @@
             height: 12vh;
             font-size: 3em;
         }
-        .message * {
-            font-size: 6vh;
-            height: 12vh;
+        .message input, .message button {
+            font-size: 3em;
+            height: 2em;
             display: block;
-            margin: 8vh auto 0vh auto;
+            margin: 1em auto 1em auto;
             text-align: center;
+        }
+        .message li {
+            text-align: left;
+        }
+        .message input {
+            width: 10em;
+        }
+        .message button {
+            width: 10em;
         }
     </style>
 </head>
@@ -64,6 +73,7 @@
                     {{ player }} scored {{ score }}
                 </li>
             </ul>
+            <button ng-click="playAgain()">Play again</button>
         </div>
     </div>
 </body>

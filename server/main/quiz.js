@@ -1,6 +1,7 @@
 var events = require('events');
 var WebSocketServer = require('ws').Server;
 var _ = require('lodash');
+var Promise = require('bluebird');
 var imdb = require('./imdb');
 
 var Constants = {
@@ -45,28 +46,39 @@ Client.prototype.joinGame = function (game) {
     this.send({event: 'joined game', data: {name: this.game.name}});
 };
 
-function Game(quiz, playerOne, playerTwo) {
+function Game(quiz) {
     this.quiz = quiz;
-    this.playerOne = playerOne;
-    this.playerTwo = playerTwo;
-    this.name = playerOne.name + ' vs ' + playerTwo.name;
-    this.round = {number: 0};
-    this.scores = {};
-    this.scores[playerOne.name] = {};
-    this.scores[playerTwo.name] = {};
-    this.playerOne.joinGame(this);
-    this.playerTwo.joinGame(this);
-    this.newRound();
-    this.playedMovies = [];
-    this.on('answer', function (player, data) {
-        if (data.name === this.round.movie.name) {
-            if (data.year === this.round.movie.year) {
-                this.scores[player.name][data.name] = 5;
-            } else {
-                this.scores[player.name][data.name] = -3;
-            }
+    this.currentRound = 0;
+    imdb.movies()
+    .then(function (topMovies) {
+        var movies = _.sample(topMovies, Constants.NUMBER_OF_ROUNDS);
+        function generateYears(year) {
+            var years = _.range(year - 3, year + 3)
+            years.splice(3, 1);
+            years = _.sample(years, 2);
+            years.push(year);
+            return _.shuffle(years);
         }
-    });
+
+        function scrapeImageUrls(rounds) {
+            return _.map(rounds, function(round) {
+                return imdb.movie(round.movie.id)
+                    .then(function (movie) {
+                        round.movie.imageUrl = movie.imageUrl;
+                    })
+            });
+        }
+
+        this.rounds = _.map(movies, function (movie) {
+            movie.years = generateYears(movie.year);
+            var round = {movie: movie, answers: {}};
+            return round;
+        });
+        Promise.all(scrapeImageUrls(this.rounds))
+        .then(function () {
+             this.emit('ready');
+        }.bind(this));
+    }.bind(this));
 }
 
 Game.prototype = Object.create(events.EventEmitter.prototype);
@@ -77,12 +89,31 @@ Game.prototype.send = function (message) {
     this.playerTwo.send(message);
 };
 
-Game.prototype.on = function (event, handler) {
+Game.prototype.onPlayer = function (event, handler) {
     this.playerOne.on(event, _.partial(handler, this.playerOne).bind(this));
     this.playerTwo.on(event, _.partial(handler, this.playerTwo).bind(this));
 };
 
-Game.prototype.end = function (message) {
+Game.prototype.start = function (playerOne, playerTwo) {
+    this.playerOne = playerOne;
+    this.playerTwo = playerTwo;
+    this.name = playerOne.name + ' vs ' + playerTwo.name;
+    this.scores = {};
+    this.scores[playerOne.name] = {};
+    this.scores[playerTwo.name] = {};
+    this.playerOne.joinGame(this);
+    this.playerTwo.joinGame(this);
+    this.onPlayer('answer', function (player, data) {
+        if (data.name === this.round().movie.name) {
+            this.round().answers[player.name] = data.year;
+        }
+    });
+    this.newRound();
+};
+
+Game.prototype.end = function () {
+    var scores = {scores: this.sumScores()};
+    this.send({event: 'game over', data: scores} );
     this.playerOne.close();
     this.playerTwo.close();
 };
@@ -94,52 +125,47 @@ Game.prototype.playerDisconnected = function () {
 };
 
 Game.prototype.sumScores = function () {
-    var scores = {};
-    var sumScore = function (player) {
-        return _.reduce(this.scores[player.name], function (sum, score, key) {
-            return sum + score;
-        }, 0);
-    }.bind(this);
-    scores[this.playerOne.name] = sumScore(this.playerOne);
-    scores[this.playerTwo.name] = sumScore(this.playerTwo);
-    return scores
+    var _scores = {};
+    _scores[this.playerOne.name] = 0;
+    _scores[this.playerTwo.name] = 0;
+    return _.reduce(this.rounds, function(scores, round) {
+        _.each(round.answers, function (value, key) {
+            if (value != undefined) {
+                scores[key] += value == round.movie.year ? 5 : -3;
+            }
+        });
+        return scores;
+    }, _scores);
 };
 
+Game.prototype.round = function () {
+    return this.rounds[this.currentRound -1];
+}
+
 Game.prototype.newRound = function () {
-    this.round.number++;
-    if (this.round.number > Constants.NUMBER_OF_ROUNDS) {
+    this.currentRound++;
+    if (this.currentRound > Constants.NUMBER_OF_ROUNDS) {
         clearTimeout(this.nextRound);
-        this.send({event: 'game over', data: {scores: this.sumScores()}} );
         this.end();
         return;
     }
-    imdb.movies()
-        .then(function (movies) {
-            var movie;
-            do {
-                movie = _.sample(movies);
-            } while (_.contains(this.playedMovies, movie.name));
-            this.playedMovies.push(movie.name);
-            this.round.movie = movie;
-            var years = _.range(movie.year - 3, movie.year + 3);
-            _.remove(years, function (year) {
-                return year === movie.year
-            });
-            years = _.sample(years, 2);
-            years.push(movie.year);
-            this.send({event: 'game', data: {scores: this.sumScores(),
-                       movie: {name: movie.name, years: _.shuffle(years), id: movie.id}}});
-            this.nextRound = setTimeout(this.newRound.bind(this), Constants.ROUND_LENGTH);
-        }.bind(this))
-        .catch(function (error) {
-        });
+    this.send({
+        event: 'game',
+        data: {
+            movie: {
+                name: this.round().movie.name,
+                years: this.round().movie.years,
+                imageUrl: this.round().movie.imageUrl
+            }
+        }
+    });
+    this.nextRound = setTimeout(this.newRound.bind(this), Constants.ROUND_LENGTH);
 };
 
 function Quiz(server) {
     var quiz = this;
     this.socketServer = new WebSocketServer({server: server, path: '/quiz'});
     this.clients = [];
-    this.games = [];
     this.socketServer.on('connection', function (socket) {
         new Client(quiz, socket);
     });
@@ -152,7 +178,13 @@ Quiz.prototype.register = function (client) {
     this.clients.push(client);
     client.send({event: 'waiting'});
     if (this.clients.length >= 2) {
-        this.games.push(new Game(this, this.clients.shift(), this.clients.shift()))
+        var playerOne = this.clients.shift();
+        var playerTwo = this.clients.shift();
+        var game = new Game(this);
+        game.on('ready', function () {
+            console.log('starting game for ' + playerOne.name + ' and ' + playerTwo.name );
+            game.start(playerOne, playerTwo);
+        });
     }
 };
 

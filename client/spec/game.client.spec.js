@@ -41,6 +41,7 @@ describe('game socket', function () {
         });
 
         it('should let players know they have joined a game', function (done) {
+            this.timeout(5000);
             playerOne.on('joined game', function (message) {
                 expect(message).to.deep.equal({name: 'player one vs player two'});
                 playerTwo.on('joined game', function (message) {
@@ -51,10 +52,11 @@ describe('game socket', function () {
         });
 
         it('should present the first movie', function (done) {
-            var expected = {scores: {'player one': 0, 'player two': 0},
-                movie: { name: 'Touch of Evil',
-                    years: [ 1958, 1955, 1956 ],
-                    id: 'tt0052311' }};
+            this.timeout(5000);
+            var expected = {movie: { name: 'Howl\'s Moving Castle',
+                    years: [ 2003, 2004, 2006 ],
+                    imageUrl: 'http://ia.media-imdb.com/images/M/MV5BMTY1OTg0MjE3MV5BMl5BanBnXkFtZTcwNTUxMTkyMQ@@._V1_SX640_SY720_.jpg' }
+            };
             playerOne.on('game', function (message) {
                 expect(message).to.deep.equal(expected);
                 playerTwo.on('game', function (message) {
@@ -70,32 +72,33 @@ describe('game socket', function () {
             playerTwo.on('game', function (message) {
                 count += 1;
                 if (count == 2) {
-                    expect(message).to.deep.equal({scores: {'player one':0, 'player two':0},
-                        movie: { name: 'In the Name of the Father',
-                            years: [ 1990, 1991, 1993 ],
-                            id: 'tt0107207' }});
+                    expect(message).to.deep.equal({movie: {
+                        name: 'A Beautiful Mind',
+                        years: [ 2001, 2002, 2000 ],
+                        imageUrl: 'http://ia.media-imdb.com/images/M/MV5BMTQ4MDI2MzkwMl5BMl5BanBnXkFtZTYwMjk0NTA5._V1_SX640_SY720_.jpg' }
+                    });
                     done();
                 }
             });
         });
 
         it('should end the game after 8 rounds', function (done) {
-            this.timeout(5000);
+            this.timeout(10000);
             var count = 0;
             playerTwo.on('game', function (message) {
                 count += 1;
-                if (message.movie.name === 'Spirited Away') {
-                    playerTwo.answer('Spirited Away', 2001);
-                } else if (message.movie.name === 'Aliens') {
-                    playerTwo.answer('Aliens', 1985);
+                if (message.movie.name === 'Memento') {
+                    playerTwo.answer('Memento', 2000);
+                } else if (message.movie.name === 'Pulp Fiction') {
+                    playerTwo.answer('Pulp Fiction', 1995);
                 }
             });
             playerOne.on('game', function (message) {
-                if (message.movie.name === 'American History X') {
-                    playerOne.answer('American History X', 1998);
-                } else if (message.movie.name === 'Raiders of the Lost Ark') {
-                    playerOne.answer('Raiders of the Lost Ark', 1981);
-                    playerOne.answer('Raiders of the Lost Ark', 1981);
+                if (message.movie.name === 'Inception') {
+                    playerOne.answer('Inception', 2010);
+                } else if (message.movie.name === 'Downfall') {
+                    playerOne.answer('Downfall', 2004);
+                    playerOne.answer('Downfall', 2004);
                 }
             });
             playerTwo.on('game over', function (message) {

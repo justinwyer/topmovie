@@ -7,16 +7,12 @@
             $scope.gameState = 'waiting';
             $scope.client.on('joined game', function () {
                 $scope.gameState = 'joined game';
+                $scope.$apply();
             });
             $scope.client.on('game', function (message) {
                 $scope.gameState = 'game';
                 $scope.movie = message.movie;
-                $http.get('/movie/' + message.movie.id)
-                    .success(function(data) {
-                        var image = data.imageUrl.split('/images/')[1];
-                        $scope.movie.imageUrl = '/images/' + image;
-                        $scope.$apply();
-                    });
+                $scope.$apply();
             });
             $scope.client.on('game over', function (message) {
                 $scope.gameState = 'game over';
@@ -29,6 +25,9 @@
                 $scope.gameState = 'answered';
                 $scope.$apply();
             };
+        };
+        $scope.playAgain = function () {
+            $location.path('/');
         };
     });
 })(angular.module('top-movie', []));
