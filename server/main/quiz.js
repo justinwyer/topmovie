@@ -182,7 +182,6 @@ Quiz.prototype.register = function (client) {
         var playerTwo = this.clients.shift();
         var game = new Game(this);
         game.on('ready', function () {
-            console.log('starting game for ' + playerOne.name + ' and ' + playerTwo.name );
             game.start(playerOne, playerTwo);
         });
     }

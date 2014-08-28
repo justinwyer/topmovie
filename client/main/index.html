@@ -24,27 +24,31 @@
             height: 12vh;
             font-size: 3em;
         }
-        .message input, .message button {
+        .form input, .form button, .message button {
             font-size: 3em;
             height: 2em;
             display: block;
             margin: 1em auto 1em auto;
             text-align: center;
+            width: 10em;
         }
-        .message li {
+        .message {
+            width: 80%;
+            min-height: 50%;
+
+        }
+        .message li, .message span {
+            font-size: 2em;
             text-align: left;
-        }
-        .message input {
-            width: 10em;
-        }
-        .message button {
-            width: 10em;
+            display: block;
+            margin: 1em auto 1em auto;
+            padding-left: 35%;
         }
     </style>
 </head>
 <body ng-controller="GameController">
     <div ng-show="gameState == 'new'">
-        <div class="message">
+        <div class="form">
             <input ng-model="name" placeholder="What's your name?">
             <button ng-click="setName(name)">Let's play!</button>
         </div>

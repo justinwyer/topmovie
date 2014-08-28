@@ -15,6 +15,9 @@ function GameClient(url, name) {
     }.bind(this);
     this.on('open', function () {
         this.send({event: 'register', data: name});
+        setInterval(function() {
+            this.send({event: 'ping'});
+        }.bind(this), 30000);
     });
 }
 
