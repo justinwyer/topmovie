@@ -41,7 +41,7 @@ describe('game socket', function () {
         });
 
         it('should let players know they have joined a game', function (done) {
-            this.timeout(5000);
+            this.timeout(10000);
             playerOne.on('waiting', function (message) {
                 playerOne.on('joined game', function (message) {
                     expect(message).to.deep.equal({name: 'player one vs player two'});
@@ -54,7 +54,7 @@ describe('game socket', function () {
         });
 
         it('should present the first movie', function (done) {
-            this.timeout(5000);
+            this.timeout(10000);
             var expected = {movie: { name: 'Howl\'s Moving Castle',
                     years: [ 2003, 2004, 2006 ],
                     imageUrl: 'http://ia.media-imdb.com/images/M/MV5BMTY1OTg0MjE3MV5BMl5BanBnXkFtZTcwNTUxMTkyMQ@@._V1_SX640_SY720_.jpg' }
@@ -69,7 +69,7 @@ describe('game socket', function () {
         });
 
         it('should present the next movie after round length expires', function (done) {
-            this.timeout(5000);
+            this.timeout(10000);
             var count = 0;
             playerTwo.on('game', function (message) {
                 count += 1;

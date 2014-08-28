@@ -44,6 +44,15 @@ module.exports = function (grunt) {
             dev: {
                 dest: './client/main/vendor'
             }
+        },
+        mochaTest: {
+            test: {
+                options: {
+                    reporter: 'spec',
+                    timeout: 5000
+                },
+                src: ['server/spec/*.js']
+            }
         }
     });
 
@@ -54,6 +63,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-bower');
 
     grunt.registerTask('develop', ['bower:dev', 'express:dev', 'watch:express']);
-    grunt.registerTask('test', ['express:test', 'karma:integration:start']);
+    grunt.registerTask('test', ['express:test', 'karma:integration:start', 'mochaTest']);
     grunt.registerTask('default', ['bower:dev']);
 };
