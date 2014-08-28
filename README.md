@@ -10,10 +10,9 @@ Getting Started:
     $ grunt test
     $ grunt develop
 
-  * open http://localhost:3000 in your browser
+open http://localhost:3000 in your browser
   
 Deploying to Heroku:
-  * Have the heroku toolbelt installed
   
     $ heroku login
     $ heroku create --buildpack https://github.com/heroku/heroku-buildpack-nodejs
