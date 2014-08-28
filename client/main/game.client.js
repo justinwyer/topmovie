@@ -11,11 +11,12 @@ function GameClient(url, name) {
     }.bind(this);
     this.websocket.onclose = function () {
         this.connected = false;
+        clearInterval(this.ping);
         this.emit('close');
     }.bind(this);
     this.on('open', function () {
         this.send({event: 'register', data: name});
-        setInterval(function() {
+        this.ping = setInterval(function() {
             this.send({event: 'ping'});
         }.bind(this), 30000);
     });

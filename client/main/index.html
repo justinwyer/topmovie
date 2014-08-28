@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title></title>
     <script src="vendor/angular.js"></script>
+    <script src="vendor/angular-route.js"></script>
     <script src="vendor/lodash.js"></script>
     <script src="vendor/eventEmitter.js"></script>
     <script src="game.client.js"></script>
@@ -53,14 +54,20 @@
             <button ng-click="setName(name)">Let's play!</button>
         </div>
     </div>
-    <div ng-show="gameState == 'waiting'">
+    <div ng-show="gameState == 'searching'">
         <div class="message">
-            <span>Looking for an opponent...</span>
+            <span>Looking for opponent...</span>
         </div>
     </div>
-    <div ng-show="gameState == 'joined game'">
+    <div ng-show="gameState == 'waiting'">
         <div class="message">
             <span>Found an opponent!</span>
+            <span>Waiting for game...</span>
+        </div>
+    </div>
+    <div ng-show="gameState == 'loading'">
+        <div class="message">
+            <span>Loading next image...</span>
         </div>
     </div>
     <div ng-show="gameState == 'game' || gameState == 'answered'">

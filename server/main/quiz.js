@@ -176,11 +176,13 @@ Quiz.prototype.constructor = Quiz;
 
 Quiz.prototype.register = function (client) {
     this.clients.push(client);
-    client.send({event: 'waiting'});
+    client.send({event: 'searching'});
     if (this.clients.length >= 2) {
         var playerOne = this.clients.shift();
         var playerTwo = this.clients.shift();
         var game = new Game(this);
+        playerOne.send({event: 'waiting'});
+        playerTwo.send({event: 'waiting'});
         game.on('ready', function () {
             game.start(playerOne, playerTwo);
         });

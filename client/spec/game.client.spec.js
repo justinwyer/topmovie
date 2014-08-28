@@ -15,7 +15,7 @@ describe('game socket', function () {
         });
 
         it('should let a player know they are waiting for an opponent when they join', function (done) {
-            playerOne.on('waiting', function () {
+            playerOne.on('searching', function () {
                 done();
             });
         });
@@ -42,11 +42,13 @@ describe('game socket', function () {
 
         it('should let players know they have joined a game', function (done) {
             this.timeout(5000);
-            playerOne.on('joined game', function (message) {
-                expect(message).to.deep.equal({name: 'player one vs player two'});
-                playerTwo.on('joined game', function (message) {
+            playerOne.on('waiting', function (message) {
+                playerOne.on('joined game', function (message) {
                     expect(message).to.deep.equal({name: 'player one vs player two'});
-                    done();
+                    playerTwo.on('joined game', function (message) {
+                        expect(message).to.deep.equal({name: 'player one vs player two'});
+                        done();
+                    });
                 });
             });
         });
