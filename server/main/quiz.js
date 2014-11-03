@@ -164,7 +164,6 @@ Game.prototype.newRound = function () {
 
 function Quiz(server) {
     var quiz = this;
-    console.log(server);
     this.socketServer = new WebSocketServer({server: server, path: '/quiz'});
     this.clients = [];
     this.socketServer.on('connection', function (socket) {
