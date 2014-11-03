@@ -18,7 +18,7 @@
         });
         $scope.setName = function (name) {
             $scope.player = name;
-            $scope.client = new GameClient('ws://' + $location.host() + ':' + $location.port() + '/quiz', $scope.player);
+            $scope.client = new GameClient('wss://' + $location.host() + ':' + $location.port() + '/quiz', $scope.player);
             $scope.client.on('searching', function () {
                 $scope.gameState = 'searching';
                 $scope.$apply();
